@@ -1,0 +1,26 @@
+name: Release
+# Publishes the version in a GitHub release's tag, such as v0.1.0, after the live tests pass.
+on:
+  release:
+    types: [published]
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: release
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.14'
+      - name: Check the tag matches __version__
+        run: grep -qx "__version__ = \"${GITHUB_REF_NAME#v}\"" src/mapricot/__init__.py
+      - run: python -m unittest discover -s tests -v
+        env:
+          PYTHONPATH: src
+          MAPRICOT_KEY: ${{ secrets.MAPRICOT_KEY }}
+      - run: pip install build && python -m build
+      - uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3

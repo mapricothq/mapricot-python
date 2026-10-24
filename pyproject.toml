@@ -1,0 +1,23 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mapricot"
+dynamic = ["version"]
+description = "Official client for the Mapricot API: geocoding, places, routing, and IP geolocation."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+keywords = ["geocoding", "places", "routing", "ip-geolocation", "maps"]
+classifiers = ["Programming Language :: Python :: 3", "Typing :: Typed"]
+
+[project.urls]
+Homepage = "https://mapricot.com/"
+Documentation = "https://mapricot.com/docs/python/"
+Source = "https://github.com/mapricothq/mapricot/tree/main/sdks/python"
+Issues = "https://github.com/mapricothq/mapricot/issues"
+
+[tool.hatch.version]
+path = "src/mapricot/__init__.py"
