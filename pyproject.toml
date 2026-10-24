@@ -16,8 +16,8 @@ classifiers = ["Programming Language :: Python :: 3", "Typing :: Typed"]
 [project.urls]
 Homepage = "https://mapricot.com/"
 Documentation = "https://mapricot.com/docs/python/"
-Source = "https://github.com/mapricothq/mapricot/tree/main/sdks/python"
-Issues = "https://github.com/mapricothq/mapricot/issues"
+Source = "https://github.com/mapricothq/mapricot-python"
+Issues = "https://github.com/mapricothq/mapricot-python/issues"
 
 [tool.hatch.version]
 path = "src/mapricot/__init__.py"
