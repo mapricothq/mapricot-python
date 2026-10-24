@@ -1,8 +1,8 @@
 # Releasing
 
-1. Bump the version in `src/mapricot/__init__.py` (`__version__`), following [semantic versioning](https://semver.org/), and merge it to `main`.
-2. Publish a GitHub release whose tag is that version with a `v`, such as `v0.2.0`: `gh release create v0.2.0 --generate-notes`.
-3. The release workflow runs the live tests, builds, and publishes to PyPI.
+Bump the version in `src/mapricot/__init__.py` (`__version__`), following [semantic versioning](https://semver.org/), and merge it to `main`. When the new version, such as `0.2.0`, has no tag yet, the release workflow runs the live tests, builds, publishes to PyPI, and creates the GitHub release `v0.2.0`. Merges that don't change the version release nothing.
+
+If the release workflow fails, fix the cause and re-run it from the Actions tab.
 
 ## Keeping up with the API
 

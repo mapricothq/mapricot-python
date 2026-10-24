@@ -1,26 +1,46 @@
 name: Release
-# Publishes the version in a GitHub release's tag, such as v0.1.0, after the live tests pass.
+# Releases __version__ once it's merged to main and has no tag yet: runs the live tests, publishes to PyPI,
+# and creates the GitHub release.
 on:
-  release:
-    types: [published]
+  push:
+    branches: [main]
+concurrency: release
 permissions:
   contents: read
-  id-token: write
 jobs:
+  version:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      tag: ${{ steps.check.outputs.tag }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - id: check
+        run: |
+          version=$(sed -n 's/^__version__ = "\(.*\)"$/\1/p' src/mapricot/__init__.py)
+          test -n "$version"
+          git ls-remote --exit-code --tags origin "v$version" || echo "tag=v$version" >> "$GITHUB_OUTPUT"
   publish:
+    needs: version
+    if: needs.version.outputs.tag
     runs-on: ubuntu-latest
     environment: release
     timeout-minutes: 10
+    permissions:
+      contents: write
+      id-token: write
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: '3.14'
-      - name: Check the tag matches __version__
-        run: grep -qx "__version__ = \"${GITHUB_REF_NAME#v}\"" src/mapricot/__init__.py
       - run: python -m unittest discover -s tests -v
         env:
           PYTHONPATH: src
           MAPRICOT_KEY: ${{ secrets.MAPRICOT_KEY }}
       - run: pip install build && python -m build
       - uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3
+      - run: gh release create "$TAG" --target "$GITHUB_SHA" --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.version.outputs.tag }}
