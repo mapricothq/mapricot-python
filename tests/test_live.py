@@ -41,6 +41,12 @@ class LiveTest(unittest.TestCase):
         self.assertEqual(data["routes"][0]["geometry"]["type"], "LineString")
         self.assertGreater(len(data["routes"][0]["geometry"]["coordinates"]), 1)
 
+    def test_isochrone(self):
+        data = self.client.isochrone({"lat": 43.7396, "lon": 7.4275}, [5, 10], mode="walk")
+        self.assertEqual([f["properties"]["minutes"] for f in data["features"]], [10, 5])
+        self.assertEqual(data["features"][0]["geometry"]["type"], "Polygon")
+        self.assertTrue(data["attribution"])
+
     def test_ip(self):
         data = self.client.ip("8.8.8.8")
         self.assertTrue(data["found"])

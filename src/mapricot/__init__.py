@@ -9,13 +9,15 @@ import urllib.parse
 import urllib.request
 from typing import Any, Literal, NotRequired, Sequence, TypedDict
 
-__version__ = "0.5.0"
+__version__ = "0.6.0"
 
 __all__ = [
     "Account",
     "Address",
     "Attribution",
     "IpLocation",
+    "Isochrone",
+    "Isochrones",
     "Leg",
     "Mapricot",
     "MapricotError",
@@ -96,6 +98,29 @@ class Route(TypedDict):
 
 class Routes(TypedDict):
     routes: list[Route]
+    attribution: NotRequired[list[Attribution]]
+
+
+class IsochroneProperties(TypedDict):
+    minutes: int
+
+
+class Polygon(TypedDict):
+    type: Literal["Polygon", "MultiPolygon"]
+    coordinates: list[Any]
+    """[longitude, latitude] rings, as GeoJSON."""
+
+
+class Isochrone(TypedDict):
+    type: Literal["Feature"]
+    properties: IsochroneProperties
+    geometry: Polygon
+
+
+class Isochrones(TypedDict):
+    type: Literal["FeatureCollection"]
+    features: list[Isochrone]
+    """One area per time, largest first. Empty when there is no road near the location."""
     attribution: NotRequired[list[Attribution]]
 
 
@@ -212,6 +237,15 @@ class Mapricot:
         if geometries:
             body["geometries"] = geometries
         return self._request("POST", "/routing/v1/route", body=body)
+
+    def isochrone(
+        self, location: Point, minutes: Sequence[int], *, mode: Literal["drive", "walk", "bicycle"] | None = None
+    ) -> Isochrones:
+        """The areas reachable from a location within 1 to 4 times, each 1 to 60 minutes."""
+        body: dict[str, Any] = {"location": location, "minutes": list(minutes)}
+        if mode:
+            body["mode"] = mode
+        return self._request("POST", "/routing/v1/isochrone", body=body)
 
     def ip(self, address: str) -> IpLocation:
         """Approximate location of a public IP address."""
