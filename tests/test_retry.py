@@ -34,7 +34,7 @@ class RetryTest(unittest.TestCase):
         self.addCleanup(server.server_close)
         self.addCleanup(server.shutdown)
         client = Mapricot("k", base_url=base_url)
-        self.assertEqual(client.search("x", focus={"lat": 1, "lon": 2}, country=["US", "CA"]), {"ok": True})
+        self.assertEqual(client.geocoding.search("x", focus={"lat": 1, "lon": 2}, country=["US", "CA"]), {"ok": True})
         self.assertEqual(len(seen), 3)
         self.assertEqual(seen[0], "/geocoding/v1/search?q=x&focus=1%2C2&country=US%2CCA")
 
