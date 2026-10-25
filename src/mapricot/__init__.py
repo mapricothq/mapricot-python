@@ -112,7 +112,6 @@ class Account(TypedDict):
     name: str
     status: str
     createdAt: str
-    created_at: str  # Deprecated: use createdAt.
 
 
 class MapricotError(Exception):

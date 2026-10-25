@@ -13,7 +13,7 @@ def serve(statuses):
         def do_GET(self):
             seen.append(self.path)
             status, code = statuses.pop(0) if statuses else (200, None)
-            body = {"ok": True} if status == 200 else {"error": {"code": code, "message": code}, "request_id": "r1"}
+            body = {"ok": True} if status == 200 else {"error": {"code": code, "message": code}, "requestId": "r1"}
             self.send_response(status)
             self.send_header("Content-Type", "application/json")
             self.send_header("X-Request-Id", "r1")
