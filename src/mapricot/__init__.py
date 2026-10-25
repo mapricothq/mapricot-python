@@ -241,7 +241,7 @@ class Mapricot:
     def isochrone(
         self, location: Point, minutes: Sequence[int], *, mode: Literal["drive", "walk", "bicycle"] | None = None
     ) -> Isochrones:
-        """The areas reachable from a location within 1 to 4 times, each 1 to 120 minutes."""
+        """The areas reachable from a location within 1 to 4 times, each 1 to 60 minutes."""
         body: dict[str, Any] = {"location": location, "minutes": list(minutes)}
         if mode:
             body["mode"] = mode
