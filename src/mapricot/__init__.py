@@ -95,8 +95,8 @@ class Step(TypedDict):
 class Leg(TypedDict):
     distanceMeters: int
     durationSeconds: int
-    steps: list[Step]
-    """Turn-by-turn directions, in order. The last step is the arrival."""
+    steps: NotRequired[list[Step]]
+    """Turn-by-turn directions, in order, when the route was asked for with steps=True. The last step is the arrival."""
 
 
 class LineString(TypedDict):
@@ -300,6 +300,7 @@ class RoutingService:
         *,
         mode: Literal["drive", "walk", "bicycle"] | None = None,
         geometries: Literal["polyline", "polyline6", "geojson"] | None = None,
+        steps: bool = False,
         lang: str | None = None,
     ) -> Routes:
         """Find a route through 2 to 20 waypoints."""
@@ -308,6 +309,8 @@ class RoutingService:
             body["mode"] = mode
         if geometries:
             body["geometries"] = geometries
+        if steps:
+            body["steps"] = True
         if lang:
             body["lang"] = lang
         return self._request("POST", "/routing/v1/route", body=body)
