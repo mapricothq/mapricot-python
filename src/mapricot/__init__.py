@@ -3,14 +3,13 @@
 from __future__ import annotations
 
 import json
-import os
 import time
 import urllib.error
 import urllib.parse
 import urllib.request
 from typing import Any, Literal, NotRequired, Sequence, TypedDict
 
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 
 __all__ = [
     "Account",
@@ -127,19 +126,18 @@ class MapricotError(Exception):
 
 
 class Mapricot:
-    """A client for https://api.mapricot.com. The key defaults to the MAPRICOT_KEY environment variable."""
+    """A client for https://api.mapricot.com that authenticates with a Mapricot key."""
 
     def __init__(
         self,
-        api_key: str | None = None,
+        api_key: str,
         *,
         base_url: str = "https://api.mapricot.com",
         timeout: float = 30,
         max_retries: int = 2,
     ):
-        api_key = api_key or os.environ.get("MAPRICOT_KEY")
         if not api_key:
-            raise ValueError("Pass api_key or set MAPRICOT_KEY.")
+            raise ValueError("Pass api_key, a Mapricot key.")
         self._api_key = api_key
         self._base_url = base_url
         self._timeout = timeout

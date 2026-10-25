@@ -8,7 +8,7 @@ from mapricot import Mapricot, MapricotError
 class LiveTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.client = Mapricot()
+        cls.client = Mapricot(os.environ["MAPRICOT_KEY"])
 
     def test_search(self):
         data = self.client.search("128 SW 3rd Ave, Portland", country=["US"], limit=1)
