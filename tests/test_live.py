@@ -36,6 +36,11 @@ class LiveTest(unittest.TestCase):
         self.assertEqual(len(data["routes"][0]["legs"]), 1)
         self.assertTrue(data["routes"][0]["polyline"])
 
+    def test_route_geojson(self):
+        data = self.client.route([{"lat": 43.7396, "lon": 7.4275}, {"lat": 43.734, "lon": 7.4222}], geometries="geojson")
+        self.assertEqual(data["routes"][0]["geometry"]["type"], "LineString")
+        self.assertGreater(len(data["routes"][0]["geometry"]["coordinates"]), 1)
+
     def test_ip(self):
         data = self.client.ip("8.8.8.8")
         self.assertTrue(data["found"])
