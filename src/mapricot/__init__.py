@@ -9,7 +9,7 @@ import urllib.parse
 import urllib.request
 from typing import Any, Literal, NotRequired, Sequence, TypedDict
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 __all__ = [
     "Account",
@@ -78,11 +78,19 @@ class Leg(TypedDict):
     durationSeconds: int
 
 
+class LineString(TypedDict):
+    type: Literal["LineString"]
+    coordinates: list[list[float]]
+    """[longitude, latitude] pairs."""
+
+
 class Route(TypedDict):
     distanceMeters: int
     durationSeconds: int
-    polyline: str
-    """Encoded polyline with six decimal places of precision."""
+    polyline: NotRequired[str]
+    """Encoded polyline, with five decimal places unless geometries was polyline6. Absent for geojson."""
+    geometry: NotRequired[LineString]
+    """The path as GeoJSON, when geometries was geojson."""
     legs: list[Leg]
 
 
@@ -190,11 +198,19 @@ class Mapricot:
         """Look up one place by its Mapricot ID."""
         return self._request("GET", f"/v1/places/{urllib.parse.quote(id, safe='')}", lang=lang)
 
-    def route(self, waypoints: Sequence[Point], *, mode: Literal["drive", "walk", "bicycle"] | None = None) -> Routes:
+    def route(
+        self,
+        waypoints: Sequence[Point],
+        *,
+        mode: Literal["drive", "walk", "bicycle"] | None = None,
+        geometries: Literal["polyline", "polyline6", "geojson"] | None = None,
+    ) -> Routes:
         """Find a route through 2 to 20 waypoints."""
         body: dict[str, Any] = {"waypoints": list(waypoints)}
         if mode:
             body["mode"] = mode
+        if geometries:
+            body["geometries"] = geometries
         return self._request("POST", "/v1/route", body=body)
 
     def ip(self, address: str) -> IpLocation:
