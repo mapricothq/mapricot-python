@@ -9,7 +9,7 @@ import urllib.parse
 import urllib.request
 from typing import Any, Callable, Literal, NotRequired, Sequence, TypedDict
 
-__version__ = "0.7.0"
+__version__ = "0.8.0"
 
 __all__ = [
     "Account",
@@ -21,6 +21,7 @@ __all__ = [
     "Isochrone",
     "Isochrones",
     "Leg",
+    "LineString",
     "Mapricot",
     "MapricotError",
     "Place",
@@ -31,6 +32,7 @@ __all__ = [
     "Route",
     "Routes",
     "RoutingService",
+    "Step",
 ]
 
 
@@ -79,9 +81,22 @@ class PlaceResult(TypedDict):
     attribution: list[Attribution]
 
 
+class Step(TypedDict):
+    """One maneuver, and the stretch from it to the next."""
+
+    instruction: str
+    distanceMeters: int
+    durationSeconds: int
+    lat: float
+    """Where the maneuver is, on the route's path."""
+    lon: float
+
+
 class Leg(TypedDict):
     distanceMeters: int
     durationSeconds: int
+    steps: NotRequired[list[Step]]
+    """Turn-by-turn directions, in order, when the route was asked for with steps=True. The last step is the arrival."""
 
 
 class LineString(TypedDict):
@@ -285,6 +300,8 @@ class RoutingService:
         *,
         mode: Literal["drive", "walk", "bicycle"] | None = None,
         geometries: Literal["polyline", "polyline6", "geojson"] | None = None,
+        steps: bool = False,
+        lang: str | None = None,
     ) -> Routes:
         """Find a route through 2 to 20 waypoints."""
         body: dict[str, Any] = {"waypoints": list(waypoints)}
@@ -292,6 +309,10 @@ class RoutingService:
             body["mode"] = mode
         if geometries:
             body["geometries"] = geometries
+        if steps:
+            body["steps"] = True
+        if lang:
+            body["lang"] = lang
         return self._request("POST", "/routing/v1/route", body=body)
 
     def isochrone(
