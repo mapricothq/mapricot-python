@@ -35,6 +35,11 @@ class LiveTest(unittest.TestCase):
         data = self.client.routing.route([{"lat": 43.7396, "lon": 7.4275}, {"lat": 43.734, "lon": 7.4222}], mode="walk")
         self.assertEqual(len(data["routes"][0]["legs"]), 1)
         self.assertTrue(data["routes"][0]["polyline"])
+        self.assertTrue(data["routes"][0]["legs"][0]["steps"][-1]["instruction"])
+
+    def test_route_steps_in_french(self):
+        data = self.client.routing.route([{"lat": 43.7396, "lon": 7.4275}, {"lat": 43.734, "lon": 7.4222}], lang="fr")
+        self.assertIn("destination", data["routes"][0]["legs"][0]["steps"][-1]["instruction"])
 
     def test_route_geojson(self):
         data = self.client.routing.route([{"lat": 43.7396, "lon": 7.4275}, {"lat": 43.734, "lon": 7.4222}], geometries="geojson")
