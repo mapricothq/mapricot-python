@@ -10,23 +10,19 @@ It needs Python 3.11 or later and has no dependencies.
 
 ## Quick start
 
-Create a server key in the [dashboard](https://app.mapricot.com/) and set it as `MAPRICOT_KEY`:
-
-```sh
-export MAPRICOT_KEY="mapricot_sk_…"
-```
+Create a server key in the [dashboard](https://app.mapricot.com/) and pass it to the client. Keep it out of your source code, for example by reading it from an environment variable as here.
 
 ```python
+import os
+
 from mapricot import Mapricot
 
-client = Mapricot()
+client = Mapricot(os.environ["MAPRICOT_KEY"])
 
 data = client.search("128 SW 3rd Ave, Portland", limit=1)
 place = data["results"][0]
 print(place["label"], place["lat"], place["lon"])
 ```
-
-Pass the key yourself with `Mapricot("mapricot_sk_…")`.
 
 ## Methods
 
@@ -51,7 +47,7 @@ route = client.route([{"lat": 45.5189, "lon": -122.6793}, {"lat": 45.5214, "lon"
 print(route["routes"][0]["durationSeconds"])
 ```
 
-A route's `polyline` is encoded with six decimal places. Decode it with precision 6, as [decoding a route polyline](https://mapricot.com/docs/polyline/) shows.
+A route's `polyline` is encoded with six decimal places. Decode it with precision 6, as [decoding a route polyline](https://mapricot.com/guides/polyline-decoder/) shows.
 
 If your app shows results, show the credits in each response's `attribution`.
 
