@@ -9,7 +9,7 @@ import urllib.parse
 import urllib.request
 from typing import Any, Literal, NotRequired, Sequence, TypedDict
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 __all__ = [
     "Account",
@@ -161,7 +161,7 @@ class Mapricot:
         lang: str | None = None,
     ) -> Places:
         """Find addresses and places matching free text."""
-        return self._request("GET", "/v1/search", q=q, focus=focus, country=country, limit=limit, lang=lang)
+        return self._request("GET", "/geocoding/v1/search", q=q, focus=focus, country=country, limit=limit, lang=lang)
 
     def autocomplete(
         self,
@@ -173,11 +173,11 @@ class Mapricot:
         lang: str | None = None,
     ) -> Places:
         """Suggest addresses and places as someone types."""
-        return self._request("GET", "/v1/autocomplete", q=q, focus=focus, country=country, limit=limit, lang=lang)
+        return self._request("GET", "/geocoding/v1/autocomplete", q=q, focus=focus, country=country, limit=limit, lang=lang)
 
     def reverse(self, lat: float, lon: float, *, limit: int | None = None, lang: str | None = None) -> Places:
         """Find the address nearest a coordinate, or the area around it."""
-        return self._request("GET", "/v1/reverse", lat=lat, lon=lon, limit=limit, lang=lang)
+        return self._request("GET", "/geocoding/v1/reverse", lat=lat, lon=lon, limit=limit, lang=lang)
 
     def nearby(
         self,
@@ -191,12 +191,12 @@ class Mapricot:
     ) -> Places:
         """List places around a coordinate, optionally by category."""
         return self._request(
-            "GET", "/v1/nearby", lat=lat, lon=lon, category=category, radius=radius, limit=limit, lang=lang
+            "GET", "/places/v1/nearby", lat=lat, lon=lon, category=category, radius=radius, limit=limit, lang=lang
         )
 
     def place(self, id: str, *, lang: str | None = None) -> PlaceResult:
         """Look up one place by its Mapricot ID."""
-        return self._request("GET", f"/v1/places/{urllib.parse.quote(id, safe='')}", lang=lang)
+        return self._request("GET", f"/places/v1/{urllib.parse.quote(id, safe='')}", lang=lang)
 
     def route(
         self,
@@ -211,15 +211,15 @@ class Mapricot:
             body["mode"] = mode
         if geometries:
             body["geometries"] = geometries
-        return self._request("POST", "/v1/route", body=body)
+        return self._request("POST", "/routing/v1/route", body=body)
 
     def ip(self, address: str) -> IpLocation:
         """Approximate location of a public IP address."""
-        return self._request("GET", f"/v1/ip/{urllib.parse.quote(address, safe='')}")
+        return self._request("GET", f"/ip-geolocation/v1/{urllib.parse.quote(address, safe='')}")
 
     def account(self) -> Account:
         """The key's account. Not billed, so it checks a key for free."""
-        return self._request("GET", "/v1/account")
+        return self._request("GET", "/account")
 
     def _request(self, method: str, path: str, body: dict[str, Any] | None = None, **params: Any) -> Any:
         query = urllib.parse.urlencode({name: _format(value) for name, value in params.items() if value is not None})

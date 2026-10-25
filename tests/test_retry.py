@@ -36,7 +36,7 @@ class RetryTest(unittest.TestCase):
         client = Mapricot("k", base_url=base_url)
         self.assertEqual(client.search("x", focus={"lat": 1, "lon": 2}, country=["US", "CA"]), {"ok": True})
         self.assertEqual(len(seen), 3)
-        self.assertEqual(seen[0], "/v1/search?q=x&focus=1%2C2&country=US%2CCA")
+        self.assertEqual(seen[0], "/geocoding/v1/search?q=x&focus=1%2C2&country=US%2CCA")
 
     def test_does_not_retry_credit_exhausted(self):
         server, seen, base_url = serve([(429, "credit_exhausted")])
