@@ -9,7 +9,7 @@ import urllib.parse
 import urllib.request
 from typing import Any, Literal, NotRequired, Sequence, TypedDict
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 __all__ = [
     "Account",
@@ -111,7 +111,8 @@ class Account(TypedDict):
     id: str
     name: str
     status: str
-    created_at: str
+    createdAt: str
+    created_at: str  # Deprecated: use createdAt.
 
 
 class MapricotError(Exception):
