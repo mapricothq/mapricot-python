@@ -7,14 +7,16 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from typing import Any, Literal, NotRequired, Sequence, TypedDict
+from typing import Any, Callable, Literal, NotRequired, Sequence, TypedDict
 
-__version__ = "0.6.0"
+__version__ = "0.7.0"
 
 __all__ = [
     "Account",
     "Address",
     "Attribution",
+    "GeocodingService",
+    "IpGeolocationService",
     "IpLocation",
     "Isochrone",
     "Isochrones",
@@ -24,9 +26,11 @@ __all__ = [
     "Place",
     "PlaceResult",
     "Places",
+    "PlacesService",
     "Point",
     "Route",
     "Routes",
+    "RoutingService",
 ]
 
 
@@ -175,6 +179,44 @@ class Mapricot:
         self._base_url = base_url
         self._timeout = timeout
         self._max_retries = max_retries
+        self.geocoding = GeocodingService(self._request)
+        self.places = PlacesService(self._request)
+        self.routing = RoutingService(self._request)
+        self.ip_geolocation = IpGeolocationService(self._request)
+
+    def account(self) -> Account:
+        """The key's account. Not billed, so it checks a key for free."""
+        return self._request("GET", "/account")
+
+    def _request(self, method: str, path: str, body: dict[str, Any] | None = None, **params: Any) -> Any:
+        query = urllib.parse.urlencode({name: _format(value) for name, value in params.items() if value is not None})
+        url = self._base_url + path + (f"?{query}" if query else "")
+        headers = {"Authorization": f"Bearer {self._api_key}", "User-Agent": f"mapricot-python/{__version__}"}
+        data = None
+        if body is not None:
+            headers["Content-Type"] = "application/json"
+            data = json.dumps(body).encode()
+
+        attempt = 0
+        while True:
+            request = urllib.request.Request(url, data=data, headers=headers, method=method)
+            try:
+                with urllib.request.urlopen(request, timeout=self._timeout) as response:
+                    return json.load(response)
+            except urllib.error.HTTPError as response:
+                with response:
+                    error = _error_from(response)
+            if attempt >= self._max_retries or not _retryable(error):
+                raise error
+            time.sleep(0.5 * 2**attempt)
+            attempt += 1
+
+
+class GeocodingService:
+    """client.geocoding: the /geocoding/v1 endpoints."""
+
+    def __init__(self, request: Callable[..., Any]):
+        self._request = request
 
     def search(
         self,
@@ -204,6 +246,13 @@ class Mapricot:
         """Find the address nearest a coordinate, or the area around it."""
         return self._request("GET", "/geocoding/v1/reverse", lat=lat, lon=lon, limit=limit, lang=lang)
 
+
+class PlacesService:
+    """client.places: the /places/v1 endpoints."""
+
+    def __init__(self, request: Callable[..., Any]):
+        self._request = request
+
     def nearby(
         self,
         lat: float,
@@ -219,9 +268,16 @@ class Mapricot:
             "GET", "/places/v1/nearby", lat=lat, lon=lon, category=category, radius=radius, limit=limit, lang=lang
         )
 
-    def place(self, id: str, *, lang: str | None = None) -> PlaceResult:
+    def get(self, id: str, *, lang: str | None = None) -> PlaceResult:
         """Look up one place by its Mapricot ID."""
         return self._request("GET", f"/places/v1/{urllib.parse.quote(id, safe='')}", lang=lang)
+
+
+class RoutingService:
+    """client.routing: the /routing/v1 endpoints."""
+
+    def __init__(self, request: Callable[..., Any]):
+        self._request = request
 
     def route(
         self,
@@ -247,36 +303,16 @@ class Mapricot:
             body["mode"] = mode
         return self._request("POST", "/routing/v1/isochrone", body=body)
 
-    def ip(self, address: str) -> IpLocation:
+
+class IpGeolocationService:
+    """client.ip_geolocation: the /ip-geolocation/v1 endpoints."""
+
+    def __init__(self, request: Callable[..., Any]):
+        self._request = request
+
+    def lookup(self, ip: str) -> IpLocation:
         """Approximate location of a public IP address."""
-        return self._request("GET", f"/ip-geolocation/v1/{urllib.parse.quote(address, safe='')}")
-
-    def account(self) -> Account:
-        """The key's account. Not billed, so it checks a key for free."""
-        return self._request("GET", "/account")
-
-    def _request(self, method: str, path: str, body: dict[str, Any] | None = None, **params: Any) -> Any:
-        query = urllib.parse.urlencode({name: _format(value) for name, value in params.items() if value is not None})
-        url = self._base_url + path + (f"?{query}" if query else "")
-        headers = {"Authorization": f"Bearer {self._api_key}", "User-Agent": f"mapricot-python/{__version__}"}
-        data = None
-        if body is not None:
-            headers["Content-Type"] = "application/json"
-            data = json.dumps(body).encode()
-
-        attempt = 0
-        while True:
-            request = urllib.request.Request(url, data=data, headers=headers, method=method)
-            try:
-                with urllib.request.urlopen(request, timeout=self._timeout) as response:
-                    return json.load(response)
-            except urllib.error.HTTPError as response:
-                with response:
-                    error = _error_from(response)
-            if attempt >= self._max_retries or not _retryable(error):
-                raise error
-            time.sleep(0.5 * 2**attempt)
-            attempt += 1
+        return self._request("GET", f"/ip-geolocation/v1/{urllib.parse.quote(ip, safe='')}")
 
 
 def _format(value: Any) -> str:
