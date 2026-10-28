@@ -67,6 +67,11 @@ class Place(TypedDict):
     lon: float
     address: NotRequired[Address]
     categories: NotRequired[list[str]]
+    phones: NotRequired[list[str]]
+    websites: NotRequired[list[str]]
+    socials: NotRequired[list[str]]
+    brand: NotRequired[str]
+    openingHours: NotRequired[str]
     distanceMeters: NotRequired[int]
     source: str
 
