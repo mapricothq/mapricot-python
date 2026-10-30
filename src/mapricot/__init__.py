@@ -9,7 +9,7 @@ import urllib.parse
 import urllib.request
 from typing import Any, Callable, Literal, NotRequired, Sequence, TypedDict
 
-__version__ = "0.10.0"
+__version__ = "0.11.0"
 
 __all__ = [
     "Account",
@@ -32,6 +32,9 @@ __all__ = [
     "Route",
     "Routes",
     "RoutingService",
+    "SearchBatch",
+    "SearchQuery",
+    "SearchResponse",
     "Step",
 ]
 
@@ -79,6 +82,35 @@ class Place(TypedDict):
 class Places(TypedDict):
     results: list[Place]
     attribution: list[Attribution]
+
+
+class SearchQuery(TypedDict):
+    """One search in a batch, with the same parameters as GeocodingService.search."""
+
+    q: str
+    focus: NotRequired[Point]
+    country: NotRequired[str | Sequence[str]]
+    limit: NotRequired[int]
+    lang: NotRequired[str]
+
+
+class SearchError(TypedDict):
+    code: str
+    message: str
+
+
+class SearchResponse(TypedDict, total=False):
+    """One search's answer in a batch: results and attribution, or an error."""
+
+    results: list[Place]
+    attribution: list[Attribution]
+    error: SearchError
+    """The error the search would get on its own, such as invalid_request or credit_exhausted. It isn't billed."""
+
+
+class SearchBatch(TypedDict):
+    responses: list[SearchResponse]
+    """One per query, in the queries' order."""
 
 
 class PlaceResult(TypedDict):
@@ -251,6 +283,11 @@ class GeocodingService:
     ) -> Places:
         """Find addresses and places matching free text."""
         return self._request("GET", "/geocoding/v1/search", q=q, focus=focus, country=country, limit=limit, lang=lang)
+
+    def search_batch(self, queries: Sequence[SearchQuery]) -> SearchBatch:
+        """Run up to 100 searches in one request. Each completed search is billed as one request."""
+        body = {"queries": [{name: _format(value) for name, value in query.items()} for query in queries]}
+        return self._request("POST", "/geocoding/v1/search/batch", body=body)
 
     def autocomplete(
         self,

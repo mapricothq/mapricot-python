@@ -15,6 +15,12 @@ class LiveTest(unittest.TestCase):
         self.assertEqual(data["results"][0]["address"]["locality"], "Portland")
         self.assertTrue(data["attribution"])
 
+    def test_search_batch(self):
+        data = self.client.geocoding.search_batch([{"q": "128 SW 3rd Ave, Portland", "country": ["US"], "limit": 1}, {"q": ""}])
+        first, second = data["responses"]
+        self.assertEqual(first["results"][0]["address"]["locality"], "Portland")
+        self.assertEqual(second["error"]["code"], "invalid_request")
+
     def test_autocomplete(self):
         data = self.client.geocoding.autocomplete("stumptown", focus={"lat": 45.52, "lon": -122.68}, limit=1)
         self.assertIn("Stumptown", data["results"][0]["name"])

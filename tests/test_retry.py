@@ -10,6 +10,10 @@ def serve(statuses):
     seen = []
 
     class Handler(BaseHTTPRequestHandler):
+        def do_POST(self):
+            seen.append(json.loads(self.rfile.read(int(self.headers["Content-Length"]))))
+            self.do_GET()
+
         def do_GET(self):
             seen.append(self.path)
             status, code = statuses.pop(0) if statuses else (200, None)
@@ -46,3 +50,10 @@ class RetryTest(unittest.TestCase):
             Mapricot("k", base_url=base_url).account()
         self.assertEqual((caught.exception.status, caught.exception.code, caught.exception.request_id), (429, "credit_exhausted", "r1"))
         self.assertEqual(len(seen), 1)
+
+    def test_search_batch_sends_queries_as_search_parameters(self):
+        server, seen, base_url = serve([])
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        Mapricot("k", base_url=base_url).geocoding.search_batch([{"q": "x", "focus": {"lat": 1, "lon": 2}, "country": ["US", "CA"], "limit": 1}])
+        self.assertEqual(seen, [{"queries": [{"q": "x", "focus": "1,2", "country": "US,CA", "limit": "1"}]}, "/geocoding/v1/search/batch"])
