@@ -22,7 +22,7 @@ class LiveTest(unittest.TestCase):
         self.assertEqual(second["error"]["code"], "invalid_request")
 
     def test_isochrone_costing(self):
-        data = self.client.routing.isochrone({"lat": 43.7396, "lon": 7.4275}, [5], mode="walk", costing={"walking_speed": 3})
+        data = self.client.routing.isochrone({"lat": 43.7396, "lon": 7.4275}, [5], mode="walk", costing={"walkingSpeed": 3})
         self.assertEqual(len(data["features"]), 1)
 
     def test_autocomplete(self):
@@ -67,8 +67,8 @@ class LiveTest(unittest.TestCase):
         data = self.client.routing.route(stops, mode="walk", costing={"type": "wheelchair"})
         self.assertEqual(len(data["routes"][0]["legs"]), 1)
         with self.assertRaises(MapricotError) as caught:
-            self.client.routing.route(stops, mode="walk", costing={"use_tolls": 0})
-        self.assertIn("costing.use_tolls isn't an option for walk", caught.exception.message)
+            self.client.routing.route(stops, mode="walk", costing={"useTolls": 0})
+        self.assertIn("costing.useTolls isn't an option for walk", caught.exception.message)
 
     def test_isochrone(self):
         data = self.client.routing.isochrone({"lat": 43.7396, "lon": 7.4275}, [5, 10], mode="walk")

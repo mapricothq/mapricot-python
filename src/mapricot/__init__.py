@@ -349,7 +349,7 @@ class RoutingService:
         costing: Mapping[str, float | bool | str] | None = None,
     ) -> Routes:
         """Find a route through 2 to 20 waypoints. costing takes Valhalla's costing options for the mode, such as
-        {"use_tolls": 0}: https://mapricot.com/docs/routing/#costing-options."""
+        {"useTolls": 0}: https://mapricot.com/docs/routing/#costing-options."""
         return self._route("/routing/v1/route", waypoints, mode, geometries, steps, lang, costing)
 
     def optimize(
