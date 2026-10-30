@@ -7,9 +7,9 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from typing import Any, Callable, Literal, NotRequired, Sequence, TypedDict
+from typing import Any, Callable, Literal, Mapping, NotRequired, Sequence, TypedDict
 
-__version__ = "0.11.0"
+__version__ = "0.12.0"
 
 __all__ = [
     "Account",
@@ -346,9 +346,11 @@ class RoutingService:
         geometries: Literal["polyline", "polyline6", "geojson"] | None = None,
         steps: bool = False,
         lang: str | None = None,
+        costing: Mapping[str, float | bool | str] | None = None,
     ) -> Routes:
-        """Find a route through 2 to 20 waypoints."""
-        return self._route("/routing/v1/route", waypoints, mode, geometries, steps, lang)
+        """Find a route through 2 to 20 waypoints. costing takes Valhalla's costing options for the mode, such as
+        {"useTolls": 0}: https://mapricot.com/docs/routing/#costing-options."""
+        return self._route("/routing/v1/route", waypoints, mode, geometries, steps, lang, costing)
 
     def optimize(
         self,
@@ -358,9 +360,11 @@ class RoutingService:
         geometries: Literal["polyline", "polyline6", "geojson"] | None = None,
         steps: bool = False,
         lang: str | None = None,
+        costing: Mapping[str, float | bool | str] | None = None,
     ) -> Routes:
-        """Find a fast route through 2 to 20 waypoints, keeping the first and last in place and reordering the rest."""
-        return self._route("/routing/v1/optimize", waypoints, mode, geometries, steps, lang)
+        """Find a fast route through 2 to 20 waypoints, keeping the first and last in place and reordering the rest.
+        costing is as for route."""
+        return self._route("/routing/v1/optimize", waypoints, mode, geometries, steps, lang, costing)
 
     def _route(
         self,
@@ -370,6 +374,7 @@ class RoutingService:
         geometries: str | None,
         steps: bool,
         lang: str | None,
+        costing: Mapping[str, float | bool | str] | None,
     ) -> Routes:
         body: dict[str, Any] = {"waypoints": list(waypoints)}
         if mode:
@@ -380,15 +385,24 @@ class RoutingService:
             body["steps"] = True
         if lang:
             body["lang"] = lang
+        if costing:
+            body["costing"] = dict(costing)
         return self._request("POST", path, body=body)
 
     def isochrone(
-        self, location: Point, minutes: Sequence[int], *, mode: Literal["drive", "walk", "bicycle"] | None = None
+        self,
+        location: Point,
+        minutes: Sequence[int],
+        *,
+        mode: Literal["drive", "walk", "bicycle"] | None = None,
+        costing: Mapping[str, float | bool | str] | None = None,
     ) -> Isochrones:
-        """The areas reachable from a location within 1 to 4 times, each 1 to 60 minutes."""
+        """The areas reachable from a location within 1 to 4 times, each 1 to 60 minutes. costing is as for route."""
         body: dict[str, Any] = {"location": location, "minutes": list(minutes)}
         if mode:
             body["mode"] = mode
+        if costing:
+            body["costing"] = dict(costing)
         return self._request("POST", "/routing/v1/isochrone", body=body)
 
 

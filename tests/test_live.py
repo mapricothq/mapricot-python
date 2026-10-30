@@ -21,6 +21,10 @@ class LiveTest(unittest.TestCase):
         self.assertEqual(first["results"][0]["address"]["locality"], "Portland")
         self.assertEqual(second["error"]["code"], "invalid_request")
 
+    def test_isochrone_costing(self):
+        data = self.client.routing.isochrone({"lat": 43.7396, "lon": 7.4275}, [5], mode="walk", costing={"walkingSpeed": 3})
+        self.assertEqual(len(data["features"]), 1)
+
     def test_autocomplete(self):
         data = self.client.geocoding.autocomplete("stumptown", focus={"lat": 45.52, "lon": -122.68}, limit=1)
         self.assertIn("Stumptown", data["results"][0]["name"])
@@ -57,6 +61,14 @@ class LiveTest(unittest.TestCase):
         data = self.client.routing.optimize(stops)
         self.assertEqual(data["routes"][0]["waypointOrder"], [0, 2, 1, 3])
         self.assertEqual(len(data["routes"][0]["legs"]), 3)
+
+    def test_route_costing(self):
+        stops = [{"lat": 43.7396, "lon": 7.4275}, {"lat": 43.734, "lon": 7.4222}]
+        data = self.client.routing.route(stops, mode="walk", costing={"type": "wheelchair"})
+        self.assertEqual(len(data["routes"][0]["legs"]), 1)
+        with self.assertRaises(MapricotError) as caught:
+            self.client.routing.route(stops, mode="walk", costing={"useTolls": 0})
+        self.assertIn("costing.useTolls isn't an option for walk", caught.exception.message)
 
     def test_isochrone(self):
         data = self.client.routing.isochrone({"lat": 43.7396, "lon": 7.4275}, [5, 10], mode="walk")
