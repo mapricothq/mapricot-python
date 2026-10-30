@@ -143,6 +143,8 @@ class LineString(TypedDict):
 
 
 class Route(TypedDict):
+    waypointOrder: NotRequired[list[int]]
+    """From routing.optimize only: the indexes of the waypoints you sent, in the order the route visits them."""
     distanceMeters: int
     durationSeconds: int
     polyline: NotRequired[str]
@@ -346,6 +348,29 @@ class RoutingService:
         lang: str | None = None,
     ) -> Routes:
         """Find a route through 2 to 20 waypoints."""
+        return self._route("/routing/v1/route", waypoints, mode, geometries, steps, lang)
+
+    def optimize(
+        self,
+        waypoints: Sequence[Point],
+        *,
+        mode: Literal["drive", "walk", "bicycle"] | None = None,
+        geometries: Literal["polyline", "polyline6", "geojson"] | None = None,
+        steps: bool = False,
+        lang: str | None = None,
+    ) -> Routes:
+        """Find a fast route through 2 to 20 waypoints, keeping the first and last in place and reordering the rest."""
+        return self._route("/routing/v1/optimize", waypoints, mode, geometries, steps, lang)
+
+    def _route(
+        self,
+        path: str,
+        waypoints: Sequence[Point],
+        mode: str | None,
+        geometries: str | None,
+        steps: bool,
+        lang: str | None,
+    ) -> Routes:
         body: dict[str, Any] = {"waypoints": list(waypoints)}
         if mode:
             body["mode"] = mode
@@ -355,7 +380,7 @@ class RoutingService:
             body["steps"] = True
         if lang:
             body["lang"] = lang
-        return self._request("POST", "/routing/v1/route", body=body)
+        return self._request("POST", path, body=body)
 
     def isochrone(
         self, location: Point, minutes: Sequence[int], *, mode: Literal["drive", "walk", "bicycle"] | None = None

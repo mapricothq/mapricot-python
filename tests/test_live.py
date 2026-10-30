@@ -52,6 +52,12 @@ class LiveTest(unittest.TestCase):
         self.assertEqual(data["routes"][0]["geometry"]["type"], "LineString")
         self.assertGreater(len(data["routes"][0]["geometry"]["coordinates"]), 1)
 
+    def test_optimize(self):
+        stops = [{"lat": 43.7396, "lon": 7.4275}, {"lat": 43.7311, "lon": 7.4197}, {"lat": 43.7445, "lon": 7.431}, {"lat": 43.734, "lon": 7.4222}]
+        data = self.client.routing.optimize(stops)
+        self.assertEqual(data["routes"][0]["waypointOrder"], [0, 2, 1, 3])
+        self.assertEqual(len(data["routes"][0]["legs"]), 3)
+
     def test_isochrone(self):
         data = self.client.routing.isochrone({"lat": 43.7396, "lon": 7.4275}, [5, 10], mode="walk")
         self.assertEqual([f["properties"]["minutes"] for f in data["features"]], [10, 5])
