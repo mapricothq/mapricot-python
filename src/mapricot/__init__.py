@@ -9,7 +9,7 @@ import urllib.parse
 import urllib.request
 from typing import Any, Callable, Literal, NotRequired, Sequence, TypedDict
 
-__version__ = "0.10.0"
+__version__ = "0.11.0"
 
 __all__ = [
     "Account",
