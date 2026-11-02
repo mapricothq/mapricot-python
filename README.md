@@ -26,7 +26,7 @@ print(place["label"], place["lat"], place["lon"])
 
 ## Methods
 
-Methods are grouped by product, the same way as the API's paths. Each returns the API's JSON as a typed dict, with the same field names as the [API reference](https://mapricot.com/api-reference/).
+Methods are grouped by product, the same way as the API's paths. Each returns the API's JSON as a typed dict, with the same field names as the [API reference](https://mapricot.com/docs/api-reference/).
 
 | Method | Endpoint |
 | --- | --- |
@@ -88,11 +88,11 @@ except MapricotError as error:
     print(error.status, error.code, error.message)  # 400 invalid_request The service rejected the request.
 ```
 
-The client retries `503` responses and `429 concurrency_exceeded`, up to twice, waiting longer each time. Errors aren't billed. Set `max_retries=` and `timeout=` (seconds) on `Mapricot(...)` to change this. The [API reference](https://mapricot.com/api-reference/#errors) lists every status.
+The client retries `503` responses and `429 concurrency_exceeded`, up to twice, waiting longer each time. Errors aren't billed. Set `max_retries=` and `timeout=` (seconds) on `Mapricot(...)` to change this. The [API reference](https://mapricot.com/docs/api-reference/#errors) lists every status.
 
 ## Links
 
 - [Mapricot](https://mapricot.com/)
 - [Python docs](https://mapricot.com/docs/python/)
-- [API reference](https://mapricot.com/api-reference/)
+- [API reference](https://mapricot.com/docs/api-reference/)
 - [Pricing](https://mapricot.com/pricing/)
