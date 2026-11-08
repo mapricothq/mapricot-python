@@ -9,7 +9,7 @@ import urllib.parse
 import urllib.request
 from typing import Any, Callable, Literal, Mapping, NotRequired, Sequence, TypedDict
 
-__version__ = "0.12.0"
+__version__ = "0.13.0"
 
 __all__ = [
     "Account",
@@ -396,13 +396,17 @@ class RoutingService:
         *,
         mode: Literal["drive", "walk", "bicycle"] | None = None,
         costing: Mapping[str, float | bool | str] | None = None,
+        generalize: float | None = None,
     ) -> Isochrones:
-        """The areas reachable from a location within 1 to 4 times, each 1 to 60 minutes. costing is as for route."""
+        """The areas reachable from a location within 1 to 4 times, each 1 to 60 minutes. costing is as for route.
+        generalize smooths each outline to within that many meters, from 10 to 5000; left out, the API picks it."""
         body: dict[str, Any] = {"location": location, "minutes": list(minutes)}
         if mode:
             body["mode"] = mode
         if costing:
             body["costing"] = dict(costing)
+        if generalize is not None:
+            body["generalize"] = generalize
         return self._request("POST", "/routing/v1/isochrone", body=body)
 
 
