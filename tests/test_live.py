@@ -1,3 +1,4 @@
+import json
 import os
 import unittest
 
@@ -69,6 +70,12 @@ class LiveTest(unittest.TestCase):
         with self.assertRaises(MapricotError) as caught:
             self.client.routing.route(stops, mode="walk", costing={"useTolls": 0})
         self.assertIn("costing.useTolls isn't an option for walk", caught.exception.message)
+
+    def test_isochrone_generalize(self):
+        location = {"lat": 43.7396, "lon": 7.4275}
+        detailed = self.client.routing.isochrone(location, [10], mode="walk")
+        smooth = self.client.routing.isochrone(location, [10], mode="walk", generalize=300)
+        self.assertLess(len(json.dumps(smooth["features"][0]["geometry"])), len(json.dumps(detailed["features"][0]["geometry"])))
 
     def test_isochrone(self):
         data = self.client.routing.isochrone({"lat": 43.7396, "lon": 7.4275}, [5, 10], mode="walk")
