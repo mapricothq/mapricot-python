@@ -9,7 +9,7 @@ import urllib.parse
 import urllib.request
 from typing import Any, Callable, Literal, Mapping, NotRequired, Sequence, TypedDict
 
-__version__ = "0.13.0"
+__version__ = "0.14.0"
 
 __all__ = [
     "Account",
@@ -85,9 +85,14 @@ class Places(TypedDict):
 
 
 class SearchQuery(TypedDict):
-    """One search in a batch, with the same parameters as GeocodingService.search."""
+    """One search in a batch, with the same parameters as GeocodingService.search: q, or an address in parts."""
 
-    q: str
+    q: NotRequired[str]
+    address: NotRequired[str]
+    locality: NotRequired[str]
+    county: NotRequired[str]
+    region: NotRequired[str]
+    postalCode: NotRequired[str]
     focus: NotRequired[Point]
     country: NotRequired[str | Sequence[str]]
     limit: NotRequired[int]
@@ -274,15 +279,33 @@ class GeocodingService:
 
     def search(
         self,
-        q: str,
+        q: str | None = None,
         *,
+        address: str | None = None,
+        locality: str | None = None,
+        county: str | None = None,
+        region: str | None = None,
+        postal_code: str | None = None,
         focus: Point | None = None,
         country: str | Sequence[str] | None = None,
         limit: int | None = None,
         lang: str | None = None,
     ) -> Places:
-        """Find addresses and places matching free text."""
-        return self._request("GET", "/geocoding/v1/search", q=q, focus=focus, country=country, limit=limit, lang=lang)
+        """Find addresses and places matching free text in q, or an address given in parts in place of q."""
+        return self._request(
+            "GET",
+            "/geocoding/v1/search",
+            q=q,
+            address=address,
+            locality=locality,
+            county=county,
+            region=region,
+            postalCode=postal_code,
+            focus=focus,
+            country=country,
+            limit=limit,
+            lang=lang,
+        )
 
     def search_batch(self, queries: Sequence[SearchQuery]) -> SearchBatch:
         """Run up to 100 searches in one request. Each completed search is billed as one request."""

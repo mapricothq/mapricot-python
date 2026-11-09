@@ -16,6 +16,10 @@ class LiveTest(unittest.TestCase):
         self.assertEqual(data["results"][0]["address"]["locality"], "Portland")
         self.assertTrue(data["attribution"])
 
+    def test_search_by_address_parts(self):
+        data = self.client.geocoding.search(address="128 SW 3rd Ave", locality="Portland", country=["US"], limit=1)
+        self.assertEqual(data["results"][0]["address"]["locality"], "Portland")
+
     def test_search_batch(self):
         data = self.client.geocoding.search_batch([{"q": "128 SW 3rd Ave, Portland", "country": ["US"], "limit": 1}, {"q": ""}])
         first, second = data["responses"]
