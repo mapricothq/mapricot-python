@@ -51,9 +51,24 @@ class RetryTest(unittest.TestCase):
         self.assertEqual((caught.exception.status, caught.exception.code, caught.exception.request_id), (429, "credit_exhausted", "r1"))
         self.assertEqual(len(seen), 1)
 
+    def test_search_sends_an_address_in_parts_in_place_of_q(self):
+        server, seen, base_url = serve([])
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        Mapricot("k", base_url=base_url).geocoding.search(address="10 Downing Street", postal_code="SW1A 2AA", country="GB")
+        self.assertEqual(seen, ["/geocoding/v1/search?address=10+Downing+Street&postalCode=SW1A+2AA&country=GB"])
+
     def test_search_batch_sends_queries_as_search_parameters(self):
         server, seen, base_url = serve([])
         self.addCleanup(server.server_close)
         self.addCleanup(server.shutdown)
-        Mapricot("k", base_url=base_url).geocoding.search_batch([{"q": "x", "focus": {"lat": 1, "lon": 2}, "country": ["US", "CA"], "limit": 1}])
-        self.assertEqual(seen, [{"queries": [{"q": "x", "focus": "1,2", "country": "US,CA", "limit": "1"}]}, "/geocoding/v1/search/batch"])
+        Mapricot("k", base_url=base_url).geocoding.search_batch(
+            [{"q": "x", "focus": {"lat": 1, "lon": 2}, "country": ["US", "CA"], "limit": 1}, {"address": "10 Downing Street", "locality": "London"}]
+        )
+        self.assertEqual(
+            seen,
+            [
+                {"queries": [{"q": "x", "focus": "1,2", "country": "US,CA", "limit": "1"}, {"address": "10 Downing Street", "locality": "London"}]},
+                "/geocoding/v1/search/batch",
+            ],
+        )
