@@ -9,7 +9,7 @@ import urllib.parse
 import urllib.request
 from typing import Any, Callable, Literal, Mapping, NotRequired, Sequence, TypedDict
 
-__version__ = "0.14.0"
+__version__ = "0.15.0"
 
 __all__ = [
     "Account",
@@ -62,7 +62,8 @@ class Address(TypedDict, total=False):
 
 
 class Place(TypedDict):
-    id: str
+    # Missing on an estimated address, which isn't a stored place.
+    id: NotRequired[str]
     type: str
     name: str
     label: str
@@ -76,6 +77,8 @@ class Place(TypedDict):
     brand: NotRequired[str]
     openingHours: NotRequired[str]
     distanceMeters: NotRequired[int]
+    # True for an address estimated between the known house numbers on either side of it on its street.
+    interpolated: NotRequired[bool]
     source: str
 
 
