@@ -355,6 +355,8 @@ class PlacesService:
 
     def get(self, id: str, *, lang: str | None = None) -> PlaceResult:
         """Look up one place by its Mapricot ID."""
+        if not id:
+            raise ValueError("Pass a place ID. An estimated address has none, so search again to find it.")
         return self._request("GET", f"/places/v1/{urllib.parse.quote(id, safe='')}", lang=lang)
 
 

@@ -44,6 +44,7 @@ class LiveTest(unittest.TestCase):
 
     def test_place(self):
         found = self.client.geocoding.search("Pioneer Courthouse Square, Portland", limit=1)["results"][0]
+        self.assertIn("id", found)
         self.assertEqual(self.client.places.get(found["id"])["result"]["id"], found["id"])
 
     def test_route(self):
